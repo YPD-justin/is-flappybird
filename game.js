@@ -47,6 +47,66 @@ let clouds = []
 // Ground offset for scrolling
 let groundOffset = 0
 
+// Sound system
+let audioContext = null
+let soundEnabled = true
+
+// Initialize audio context
+function initAudio() {
+    try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)()
+        console.log('Audio context initialized')
+    } catch (e) {
+        console.error('Web Audio API not supported:', e)
+        soundEnabled = false
+    }
+}
+
+// Play sound effect
+function playSound(type) {
+    if (!soundEnabled || !audioContext) return
+    
+    const now = audioContext.currentTime
+    const oscillator = audioContext.createOscillator()
+    const gainNode = audioContext.createGain()
+    
+    oscillator.connect(gainNode)
+    gainNode.connect(audioContext.destination)
+    
+    switch(type) {
+        case 'jump':
+            // Jump sound - quick chirp
+            oscillator.frequency.setValueAtTime(400, now)
+            oscillator.frequency.linearRampToValueAtTime(600, now + 0.1)
+            gainNode.gain.setValueAtTime(0.3, now)
+            gainNode.gain.linearRampToValueAtTime(0, now + 0.1)
+            oscillator.start(now)
+            oscillator.stop(now + 0.1)
+            break
+            
+        case 'score':
+            // Score sound - pleasant ding
+            oscillator.frequency.setValueAtTime(523.25, now) // C5
+            oscillator.frequency.linearRampToValueAtTime(659.25, now + 0.1) // E5
+            gainNode.gain.setValueAtTime(0.3, now)
+            gainNode.gain.linearRampToValueAtTime(0, now + 0.2)
+            oscillator.start(now)
+            oscillator.stop(now + 0.2)
+            break
+            
+        case 'death':
+            // Death sound - descending tone
+            oscillator.frequency.setValueAtTime(300, now)
+            oscillator.frequency.linearRampToValueAtTime(100, now + 0.3)
+            gainNode.gain.setValueAtTime(0.4, now)
+            gainNode.gain.linearRampToValueAtTime(0, now + 0.3)
+            oscillator.type = 'square'
+            oscillator.start(now)
+            oscillator.stop(now + 0.3)
+            break
+    }
+}
+
 // Load high score from localStorage
 function loadHighScore() {
     const saved = localStorage.getItem('flappyBirdHighScore')
@@ -91,6 +151,7 @@ function updateBird() {
             gameState = 'gameover'
             bird.isDead = true
             saveHighScore()
+            playSound('death')
             console.log('Game Over - Hit ground')
         }
         
@@ -134,6 +195,7 @@ function checkPipeCollision() {
                 gameState = 'gameover'
                 bird.isDead = true
                 saveHighScore()
+                playSound('death')
                 console.log('Game Over - Hit top pipe')
             }
             
@@ -142,6 +204,7 @@ function checkPipeCollision() {
                 gameState = 'gameover'
                 bird.isDead = true
                 saveHighScore()
+                playSound('death')
                 console.log('Game Over - Hit bottom pipe')
             }
         }
@@ -462,6 +525,7 @@ function updatePipes() {
             if (!pipe.passed && pipe.x + pipe.width < bird.x) {
                 pipe.passed = true
                 score++
+                playSound('score')
                 console.log('Score:', score)
             }
         })
@@ -591,6 +655,11 @@ function gameLoop(currentTime) {
         ctx.fillText(`Original bird: ${bird.width}x${bird.height}`, 10, 120)
     }
     
+    // Draw sound status
+    ctx.fillStyle = '#000'
+    ctx.font = '14px Arial'
+    ctx.fillText(`Sound: ${soundEnabled ? 'ON' : 'OFF'} (Press S to toggle)`, CANVAS_WIDTH - 150, 20)
+    
     // Game state specific rendering
     if (gameState === 'menu') {
         // Draw ground and bird for menu
@@ -631,6 +700,11 @@ function gameLoop(currentTime) {
 
 // Handle jump
 function jump() {
+    // Initialize audio on first user interaction
+    if (!audioContext) {
+        initAudio()
+    }
+    
     if (gameState === 'menu') {
         gameState = 'playing'
         score = 0
@@ -643,6 +717,7 @@ function jump() {
         console.log('Game started')
     } else if (gameState === 'playing') {
         bird.velocity = JUMP_VELOCITY
+        playSound('jump')
     } else if (gameState === 'gameover') {
         // Reset game
         gameState = 'playing'
@@ -665,6 +740,9 @@ document.addEventListener('keydown', (e) => {
     } else if (e.code === 'KeyD') {
         debugMode = !debugMode
         console.log('Debug mode:', debugMode)
+    } else if (e.code === 'KeyS') {
+        soundEnabled = !soundEnabled
+        console.log('Sound:', soundEnabled ? 'ON' : 'OFF')
     }
 })
 
