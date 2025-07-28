@@ -114,22 +114,45 @@ function drawBird() {
     // Apply rotation
     ctx.rotate(bird.rotation)
     
-    // Draw bird as yellow rectangle
+    // Draw bird body (ellipse shape)
     ctx.fillStyle = '#FFD700'
-    ctx.fillRect(-bird.width / 2, -bird.height / 2, bird.width, bird.height)
-    
-    // Draw eye
-    ctx.fillStyle = '#000'
     ctx.beginPath()
-    ctx.arc(bird.width / 4, -bird.height / 4, 3, 0, Math.PI * 2)
+    ctx.ellipse(0, 0, bird.width / 2, bird.height / 2.2, 0, 0, Math.PI * 2)
     ctx.fill()
     
-    // Draw beak
+    // Draw wing
+    ctx.fillStyle = '#FFA500'
+    ctx.beginPath()
+    ctx.ellipse(-bird.width / 4, 0, bird.width / 3, bird.height / 3, -0.3, 0, Math.PI * 2)
+    ctx.fill()
+    
+    // Draw eye background (white)
+    ctx.fillStyle = '#FFF'
+    ctx.beginPath()
+    ctx.arc(bird.width / 4, -bird.height / 4, 6, 0, Math.PI * 2)
+    ctx.fill()
+    
+    // Draw eye pupil
+    ctx.fillStyle = '#000'
+    ctx.beginPath()
+    ctx.arc(bird.width / 4 + 1, -bird.height / 4, 3, 0, Math.PI * 2)
+    ctx.fill()
+    
+    // Draw beak (upper)
     ctx.fillStyle = '#FF6347'
     ctx.beginPath()
-    ctx.moveTo(bird.width / 2, 0)
-    ctx.lineTo(bird.width / 2 + 8, 0)
-    ctx.lineTo(bird.width / 2, 5)
+    ctx.moveTo(bird.width / 2 - 2, -2)
+    ctx.lineTo(bird.width / 2 + 10, 0)
+    ctx.lineTo(bird.width / 2 - 2, 3)
+    ctx.closePath()
+    ctx.fill()
+    
+    // Draw beak (lower)
+    ctx.fillStyle = '#CD5C5C'
+    ctx.beginPath()
+    ctx.moveTo(bird.width / 2 - 2, 3)
+    ctx.lineTo(bird.width / 2 + 8, 3)
+    ctx.lineTo(bird.width / 2 - 2, 6)
     ctx.closePath()
     ctx.fill()
     
