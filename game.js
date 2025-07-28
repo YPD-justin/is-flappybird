@@ -401,21 +401,49 @@ function updatePipes() {
 // Draw pipes
 function drawPipes() {
     pipes.forEach(pipe => {
+        // Create gradient for pipes
+        const pipeGradient = ctx.createLinearGradient(pipe.x, 0, pipe.x + pipe.width, 0)
+        pipeGradient.addColorStop(0, '#74C365')    // Light green on left
+        pipeGradient.addColorStop(0.5, '#228B22')  // Medium green in middle
+        pipeGradient.addColorStop(1, '#1F5F1F')    // Dark green on right
+        
+        // Create gradient for pipe caps
+        const capGradient = ctx.createLinearGradient(pipe.x - 5, 0, pipe.x + pipe.width + 5, 0)
+        capGradient.addColorStop(0, '#5FA052')
+        capGradient.addColorStop(0.5, '#006400')
+        capGradient.addColorStop(1, '#003300')
+        
         // Top pipe
-        ctx.fillStyle = '#228B22'
+        ctx.fillStyle = pipeGradient
         ctx.fillRect(pipe.x, 0, pipe.width, pipe.gapY)
         
+        // Top pipe highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
+        ctx.fillRect(pipe.x + 5, 0, 10, pipe.gapY)
+        
         // Top pipe cap
-        ctx.fillStyle = '#006400'
+        ctx.fillStyle = capGradient
         ctx.fillRect(pipe.x - 5, pipe.gapY - 30, pipe.width + 10, 30)
         
+        // Top pipe cap highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'
+        ctx.fillRect(pipe.x, pipe.gapY - 28, pipe.width, 5)
+        
         // Bottom pipe
-        ctx.fillStyle = '#228B22'
+        ctx.fillStyle = pipeGradient
         ctx.fillRect(pipe.x, pipe.gapY + PIPE_GAP, pipe.width, CANVAS_HEIGHT - pipe.gapY - PIPE_GAP - GROUND_HEIGHT)
         
+        // Bottom pipe highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
+        ctx.fillRect(pipe.x + 5, pipe.gapY + PIPE_GAP + 30, 10, CANVAS_HEIGHT - pipe.gapY - PIPE_GAP - GROUND_HEIGHT - 30)
+        
         // Bottom pipe cap
-        ctx.fillStyle = '#006400'
+        ctx.fillStyle = capGradient
         ctx.fillRect(pipe.x - 5, pipe.gapY + PIPE_GAP, pipe.width + 10, 30)
+        
+        // Bottom pipe cap highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'
+        ctx.fillRect(pipe.x, pipe.gapY + PIPE_GAP + 5, pipe.width, 5)
         
         // Draw debug info
         if (debugMode) {
