@@ -536,24 +536,43 @@ function updatePipes() {
         }
         
         // Remove pipes that are off-screen
-        pipes = pipes.filter(pipe => pipe.x + pipe.width > -50)
+        pipes = pipes.filter(pipe => {
+            if (pipe.x + pipe.width <= -50) {
+                // Clean up gradient cache for removed pipes
+                pipeGradientCache.delete(pipe.x)
+                return false
+            }
+            return true
+        })
     }
 }
+
+// Cache for pipe gradients
+const pipeGradientCache = new Map()
 
 // Draw pipes
 function drawPipes() {
     pipes.forEach(pipe => {
-        // Create gradient for pipes
-        const pipeGradient = ctx.createLinearGradient(pipe.x, 0, pipe.x + pipe.width, 0)
-        pipeGradient.addColorStop(0, '#74C365')    // Light green on left
-        pipeGradient.addColorStop(0.5, '#228B22')  // Medium green in middle
-        pipeGradient.addColorStop(1, '#1F5F1F')    // Dark green on right
+        // Use cached gradient or create new one
+        let gradients = pipeGradientCache.get(pipe.x)
+        if (!gradients) {
+            // Create gradient for pipes
+            const pipeGradient = ctx.createLinearGradient(pipe.x, 0, pipe.x + pipe.width, 0)
+            pipeGradient.addColorStop(0, '#74C365')    // Light green on left
+            pipeGradient.addColorStop(0.5, '#228B22')  // Medium green in middle
+            pipeGradient.addColorStop(1, '#1F5F1F')    // Dark green on right
+            
+            // Create gradient for pipe caps
+            const capGradient = ctx.createLinearGradient(pipe.x - 5, 0, pipe.x + pipe.width + 5, 0)
+            capGradient.addColorStop(0, '#5FA052')
+            capGradient.addColorStop(0.5, '#006400')
+            capGradient.addColorStop(1, '#003300')
+            
+            gradients = { pipeGradient, capGradient }
+            pipeGradientCache.set(pipe.x, gradients)
+        }
         
-        // Create gradient for pipe caps
-        const capGradient = ctx.createLinearGradient(pipe.x - 5, 0, pipe.x + pipe.width + 5, 0)
-        capGradient.addColorStop(0, '#5FA052')
-        capGradient.addColorStop(0.5, '#006400')
-        capGradient.addColorStop(1, '#003300')
+        const { pipeGradient, capGradient } = gradients
         
         // Top pipe
         ctx.fillStyle = pipeGradient
@@ -615,12 +634,24 @@ function drawPipes() {
     })
 }
 
+// Performance optimization variables
+let frameSkip = 0
+const TARGET_FPS = 60
+const FRAME_TIME = 1000 / TARGET_FPS
+
 // Game loop
 function gameLoop(currentTime) {
-    // Calculate FPS
+    // Calculate FPS and frame timing
     if (currentTime) {
         const deltaTime = currentTime - lastTime
         fps = Math.round(1000 / deltaTime)
+        
+        // Skip frame if running too fast
+        if (deltaTime < FRAME_TIME * 0.8) {
+            requestAnimationFrame(gameLoop)
+            return
+        }
+        
         lastTime = currentTime
     }
     
@@ -634,10 +665,12 @@ function gameLoop(currentTime) {
     updateClouds()
     drawClouds()
     
-    // Draw FPS counter
-    ctx.fillStyle = '#000'
-    ctx.font = '16px Arial'
-    ctx.fillText(`FPS: ${fps}`, 10, 20)
+    // Draw FPS counter (update less frequently for performance)
+    if (frameCount % 10 === 0) {
+        ctx.fillStyle = '#000'
+        ctx.font = '16px Arial'
+        ctx.fillText(`FPS: ${fps}`, 10, 20)
+    }
     
     // Draw debug info
     if (debugMode) {
