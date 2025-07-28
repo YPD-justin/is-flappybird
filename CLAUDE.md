@@ -121,18 +121,34 @@ flappybird/
 44. Add difficulty progression
 
 ## Testing Approach
-- Each step should be independently testable
-- Use console.log() for debugging game state
-- Test in browser console with game object exposed
-- Visual testing by rendering each component separately
+- Test each small step independently, not by phase
+- Use Playwright for automated testing after each implementation
+- Take screenshots to verify visual changes
+- Check console logs for errors and debug messages
+- Test user interactions and game state transitions
 - Performance testing with FPS counter
 
-## Project Collaboration Notes
-- 앞으로 기능 구현할 때는 너가 구현하고, 내가 테스트하고 Okay하면 다음 단계로 넘어갈꺼야.
-
 ## Development Workflow
-- 이제는 단계별 구현, 테스트를 계속 반복해줘. 중요 Phase에서만 멈춰서 사용자의 피드백을 받아줘
+Follow this workflow for every feature implementation:
+1. **Implement feature** - Write the code for the new feature
+2. **Test with Playwright** - Automatically test using Playwright browser automation
+3. **If test fails** - Debug and fix the implementation, then test again
+4. **If test passes** - Create a git commit with descriptive message
+5. **Move to next feature** - Only proceed after successful test and commit
 
-## Testing Recommendations
-- **테스트 전략**
-  - Phase 별로 테스트하지 말고, 각 작은 단계별로 테스트해줘.
+## Testing Guidelines
+- Use Playwright MCP for automated browser testing
+- Take screenshots to verify visual features
+- Test user interactions (clicks, keyboard input)
+- Verify console logs for errors
+- Test edge cases and error conditions
+
+## Git Commit Guidelines
+- Commit after each successfully tested feature
+- Use descriptive commit messages explaining what was added
+- Include test results in commit message when relevant
+- Follow conventional commit format when possible
+
+## Project Collaboration Notes
+- 기능 구현 워크플로우: 기능 구현 → playwright 테스트 → 테스트 실패면 다시 구현 → 테스트 성공이면 commit
+- 단계별 구현과 테스트를 자동으로 진행하고, Phase 완료 시점에서만 사용자 피드백 요청
