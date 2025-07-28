@@ -32,7 +32,9 @@ const bird = {
     width: 30,
     height: 30,
     velocity: 0,
-    rotation: 0
+    rotation: 0,
+    isDead: false,
+    deathAnimation: 0  // Animation progress (0-1)
 }
 
 // Pipes array
@@ -63,6 +65,7 @@ function updateBird() {
             bird.y = CANVAS_HEIGHT - GROUND_HEIGHT - bird.height / 2
             bird.velocity = 0
             gameState = 'gameover'
+            bird.isDead = true
             console.log('Game Over - Hit ground')
         }
         
@@ -74,6 +77,18 @@ function updateBird() {
         
         // Pipe collision
         checkPipeCollision()
+    } else if (gameState === 'gameover' && bird.isDead) {
+        // Death animation - continue falling with rotation
+        if (bird.y + bird.height / 2 < CANVAS_HEIGHT - GROUND_HEIGHT) {
+            bird.velocity += GRAVITY * 1.5  // Faster fall during death
+            bird.y += bird.velocity
+            bird.rotation += 0.15  // Spin during death
+        }
+        
+        // Update death animation progress
+        if (bird.deathAnimation < 1) {
+            bird.deathAnimation += 0.05
+        }
     }
 }
 
@@ -92,12 +107,14 @@ function checkPipeCollision() {
             // Check collision with top pipe (more forgiving)
             if (bird.y - bird.height / 2 + topReduction < pipe.gapY) {
                 gameState = 'gameover'
+                bird.isDead = true
                 console.log('Game Over - Hit top pipe')
             }
             
             // Check collision with bottom pipe (less forgiving)
             if (bird.y + bird.height / 2 - bottomReduction > pipe.gapY + PIPE_GAP) {
                 gameState = 'gameover'
+                bird.isDead = true
                 console.log('Game Over - Hit bottom pipe')
             }
         }
@@ -113,6 +130,16 @@ function drawBird() {
     
     // Apply rotation
     ctx.rotate(bird.rotation)
+    
+    // Apply death animation effects
+    if (bird.isDead && bird.deathAnimation > 0) {
+        // Fade out effect
+        ctx.globalAlpha = Math.max(0.3, 1 - bird.deathAnimation * 0.5)
+        
+        // Scale down slightly
+        const scale = 1 - bird.deathAnimation * 0.2
+        ctx.scale(scale, scale)
+    }
     
     // Draw bird body (ellipse shape)
     ctx.fillStyle = '#FFD700'
@@ -559,6 +586,9 @@ function jump() {
         pipes = []
         bird.y = CANVAS_HEIGHT / 3
         bird.velocity = 0
+        bird.isDead = false
+        bird.deathAnimation = 0
+        bird.rotation = 0
         console.log('Game started')
     } else if (gameState === 'playing') {
         bird.velocity = JUMP_VELOCITY
@@ -570,6 +600,8 @@ function jump() {
         bird.y = CANVAS_HEIGHT / 3
         bird.velocity = 0
         bird.rotation = 0
+        bird.isDead = false
+        bird.deathAnimation = 0
         console.log('Game restarted')
     }
 }
