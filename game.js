@@ -10,10 +10,16 @@ const CANVAS_WIDTH = canvas.width
 const CANVAS_HEIGHT = canvas.height
 const GRAVITY = 0.4
 const JUMP_VELOCITY = -8
-const PIPE_SPEED = 2
-const PIPE_GAP = 150
+const BASE_PIPE_SPEED = 2
+const BASE_PIPE_GAP = 150
+const MIN_PIPE_GAP = 120
 const PIPE_WIDTH = 80
 const GROUND_HEIGHT = 50
+const DIFFICULTY_INCREASE_INTERVAL = 5 // Increase difficulty every 5 points
+
+// Dynamic difficulty variables
+let pipeSpeed = BASE_PIPE_SPEED
+let pipeGap = BASE_PIPE_GAP
 
 // Game state
 let gameState = 'menu' // menu, playing, gameover
@@ -200,7 +206,7 @@ function checkPipeCollision() {
             }
             
             // Check collision with bottom pipe (less forgiving)
-            if (bird.y + bird.height / 2 - bottomReduction > pipe.gapY + PIPE_GAP) {
+            if (bird.y + bird.height / 2 - bottomReduction > pipe.gapY + pipeGap) {
                 gameState = 'gameover'
                 bird.isDead = true
                 saveHighScore()
@@ -391,7 +397,7 @@ function drawClouds() {
 function drawGround() {
     // Update ground offset for scrolling effect
     if (gameState === 'playing') {
-        groundOffset -= PIPE_SPEED
+        groundOffset -= pipeSpeed
         if (groundOffset <= -50) {
             groundOffset = 0
         }
@@ -508,7 +514,7 @@ function drawGameOverScreen() {
 
 // Create pipe
 function createPipe() {
-    const gapY = Math.random() * (CANVAS_HEIGHT - GROUND_HEIGHT - PIPE_GAP - 100) + 50
+    const gapY = Math.random() * (CANVAS_HEIGHT - GROUND_HEIGHT - pipeGap - 100) + 50
     return {
         x: CANVAS_WIDTH,
         gapY: gapY,
@@ -517,12 +523,26 @@ function createPipe() {
     }
 }
 
+// Update difficulty based on score
+function updateDifficulty() {
+    // Calculate difficulty level based on score
+    const difficultyLevel = Math.floor(score / DIFFICULTY_INCREASE_INTERVAL)
+    
+    // Increase pipe speed (max 2x base speed)
+    pipeSpeed = Math.min(BASE_PIPE_SPEED + (difficultyLevel * 0.3), BASE_PIPE_SPEED * 2)
+    
+    // Decrease pipe gap (min MIN_PIPE_GAP)
+    pipeGap = Math.max(BASE_PIPE_GAP - (difficultyLevel * 5), MIN_PIPE_GAP)
+    
+    console.log(`Difficulty Level: ${difficultyLevel}, Speed: ${pipeSpeed}, Gap: ${pipeGap}`)
+}
+
 // Update pipes
 function updatePipes() {
     if (gameState === 'playing') {
         // Move pipes
         pipes.forEach(pipe => {
-            pipe.x -= PIPE_SPEED
+            pipe.x -= pipeSpeed
             
             // Check if bird passed the pipe
             if (!pipe.passed && pipe.x + pipe.width < bird.x) {
@@ -530,6 +550,9 @@ function updatePipes() {
                 score++
                 playSound('score')
                 console.log('Score:', score)
+                
+                // Update difficulty when score increases
+                updateDifficulty()
             }
         })
         
@@ -595,19 +618,19 @@ function drawPipes() {
         
         // Bottom pipe
         ctx.fillStyle = pipeGradient
-        ctx.fillRect(pipe.x, pipe.gapY + PIPE_GAP, pipe.width, CANVAS_HEIGHT - pipe.gapY - PIPE_GAP - GROUND_HEIGHT)
+        ctx.fillRect(pipe.x, pipe.gapY + pipeGap, pipe.width, CANVAS_HEIGHT - pipe.gapY - pipeGap - GROUND_HEIGHT)
         
         // Bottom pipe highlight
         ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
-        ctx.fillRect(pipe.x + 5, pipe.gapY + PIPE_GAP + 30, 10, CANVAS_HEIGHT - pipe.gapY - PIPE_GAP - GROUND_HEIGHT - 30)
+        ctx.fillRect(pipe.x + 5, pipe.gapY + pipeGap + 30, 10, CANVAS_HEIGHT - pipe.gapY - pipeGap - GROUND_HEIGHT - 30)
         
         // Bottom pipe cap
         ctx.fillStyle = capGradient
-        ctx.fillRect(pipe.x - 5, pipe.gapY + PIPE_GAP, pipe.width + 10, 30)
+        ctx.fillRect(pipe.x - 5, pipe.gapY + pipeGap, pipe.width + 10, 30)
         
         // Bottom pipe cap highlight
         ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'
-        ctx.fillRect(pipe.x, pipe.gapY + PIPE_GAP + 5, pipe.width, 5)
+        ctx.fillRect(pipe.x, pipe.gapY + pipeGap + 5, pipe.width, 5)
         
         // Draw debug info
         if (debugMode) {
@@ -624,8 +647,8 @@ function drawPipes() {
             
             // Bottom gap line
             ctx.beginPath()
-            ctx.moveTo(pipe.x, pipe.gapY + PIPE_GAP)
-            ctx.lineTo(pipe.x + pipe.width, pipe.gapY + PIPE_GAP)
+            ctx.moveTo(pipe.x, pipe.gapY + pipeGap)
+            ctx.lineTo(pipe.x + pipe.width, pipe.gapY + pipeGap)
             ctx.stroke()
             
             // Pipe edges
@@ -750,6 +773,9 @@ function jump() {
         bird.isDead = false
         bird.deathAnimation = 0
         bird.rotation = 0
+        // Reset difficulty
+        pipeSpeed = BASE_PIPE_SPEED
+        pipeGap = BASE_PIPE_GAP
         console.log('Game started')
     } else if (gameState === 'playing') {
         bird.velocity = JUMP_VELOCITY
@@ -764,6 +790,9 @@ function jump() {
         bird.rotation = 0
         bird.isDead = false
         bird.deathAnimation = 0
+        // Reset difficulty
+        pipeSpeed = BASE_PIPE_SPEED
+        pipeGap = BASE_PIPE_GAP
         console.log('Game restarted')
     }
 }
@@ -806,3 +835,9 @@ initClouds()
 // Start game loop
 gameLoop()
 console.log('Game loop started')
+
+// Expose some functions for testing
+if (window.location.protocol === 'file:') {
+    window.updateDifficulty = updateDifficulty
+    window.getCurrentDifficulty = () => ({ pipeSpeed, pipeGap, score })
+}
