@@ -18,6 +18,7 @@ const GROUND_HEIGHT = 50
 // Game state
 let gameState = 'menu' // menu, playing, gameover
 let score = 0
+let highScore = 0
 let frameCount = 0
 let debugMode = false // Toggle with 'D' key
 
@@ -46,6 +47,29 @@ let clouds = []
 // Ground offset for scrolling
 let groundOffset = 0
 
+// Load high score from localStorage
+function loadHighScore() {
+    const saved = localStorage.getItem('flappyBirdHighScore')
+    if (saved) {
+        highScore = parseInt(saved)
+    }
+    console.log('High score loaded:', highScore)
+}
+
+// Save high score to localStorage
+function saveHighScore() {
+    if (score > highScore) {
+        highScore = score
+        localStorage.setItem('flappyBirdHighScore', highScore.toString())
+        console.log('New high score saved:', highScore)
+        return true // New high score
+    }
+    return false // Not a new high score
+}
+
+// Initialize high score
+loadHighScore()
+
 console.log('Game variables initialized:')
 console.log(`Canvas: ${CANVAS_WIDTH}x${CANVAS_HEIGHT}`)
 console.log(`Game state: ${gameState}`)
@@ -66,6 +90,7 @@ function updateBird() {
             bird.velocity = 0
             gameState = 'gameover'
             bird.isDead = true
+            saveHighScore()
             console.log('Game Over - Hit ground')
         }
         
@@ -108,6 +133,7 @@ function checkPipeCollision() {
             if (bird.y - bird.height / 2 + topReduction < pipe.gapY) {
                 gameState = 'gameover'
                 bird.isDead = true
+                saveHighScore()
                 console.log('Game Over - Hit top pipe')
             }
             
@@ -115,6 +141,7 @@ function checkPipeCollision() {
             if (bird.y + bird.height / 2 - bottomReduction > pipe.gapY + PIPE_GAP) {
                 gameState = 'gameover'
                 bird.isDead = true
+                saveHighScore()
                 console.log('Game Over - Hit bottom pipe')
             }
         }
@@ -351,7 +378,16 @@ function drawStartScreen() {
     ctx.strokeText('Flappy Bird', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 3)
     ctx.fillText('Flappy Bird', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 3)
     
+    // Draw high score if exists
+    if (highScore > 0) {
+        ctx.font = '20px Arial'
+        ctx.fillStyle = '#FFD700'
+        ctx.strokeText(`High Score: ${highScore}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 3 + 50)
+        ctx.fillText(`High Score: ${highScore}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 3 + 50)
+    }
+    
     // Draw instructions
+    ctx.fillStyle = '#FFF'
     ctx.font = '24px Arial'
     ctx.strokeText('Press SPACE or Click to Start', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
     ctx.fillText('Press SPACE or Click to Start', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
@@ -380,10 +416,25 @@ function drawGameOverScreen() {
     
     // Draw score
     ctx.font = '32px Arial'
-    ctx.strokeText(`Score: ${score}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
-    ctx.fillText(`Score: ${score}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
+    ctx.strokeText(`Score: ${score}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 40)
+    ctx.fillText(`Score: ${score}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 40)
+    
+    // Draw high score
+    const isNewHighScore = score === highScore && score > 0
+    if (isNewHighScore) {
+        ctx.fillStyle = '#FFD700'  // Gold color for new high score
+        ctx.font = 'bold 28px Arial'
+        ctx.strokeText('NEW HIGH SCORE!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
+        ctx.fillText('NEW HIGH SCORE!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
+    } else {
+        ctx.fillStyle = '#FFF'
+        ctx.font = '24px Arial'
+        ctx.strokeText(`High Score: ${highScore}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
+        ctx.fillText(`High Score: ${highScore}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
+    }
     
     // Draw restart instruction
+    ctx.fillStyle = '#FFF'
     ctx.font = '24px Arial'
     ctx.strokeText('Press SPACE or Click to Restart', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 60)
     ctx.fillText('Press SPACE or Click to Restart', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 60)
