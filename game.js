@@ -452,13 +452,15 @@ function drawStartScreen() {
     // Draw instructions
     ctx.fillStyle = '#FFF'
     ctx.font = '24px Arial'
-    ctx.strokeText('Press SPACE or Click to Start', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
-    ctx.fillText('Press SPACE or Click to Start', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
+    const startText = 'ontouchstart' in window ? 'Tap to Start' : 'Press SPACE or Click to Start'
+    ctx.strokeText(startText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
+    ctx.fillText(startText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
     
     // Draw controls
     ctx.font = '18px Arial'
-    ctx.strokeText('Press SPACE or Click to Jump', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50)
-    ctx.fillText('Press SPACE or Click to Jump', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50)
+    const controlText = 'ontouchstart' in window ? 'Tap to Jump' : 'Press SPACE or Click to Jump'
+    ctx.strokeText(controlText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50)
+    ctx.fillText(controlText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50)
 }
 
 // Draw game over screen
@@ -499,8 +501,9 @@ function drawGameOverScreen() {
     // Draw restart instruction
     ctx.fillStyle = '#FFF'
     ctx.font = '24px Arial'
-    ctx.strokeText('Press SPACE or Click to Restart', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 60)
-    ctx.fillText('Press SPACE or Click to Restart', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 60)
+    const restartText = 'ontouchstart' in window ? 'Tap to Restart' : 'Press SPACE or Click to Restart'
+    ctx.strokeText(restartText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 60)
+    ctx.fillText(restartText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 60)
 }
 
 // Create pipe
@@ -780,6 +783,22 @@ document.addEventListener('keydown', (e) => {
 })
 
 canvas.addEventListener('click', jump)
+
+// Touch event support for mobile
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault()
+    jump()
+})
+
+// Prevent double-tap zoom on mobile
+let lastTouchEnd = 0
+document.addEventListener('touchend', (e) => {
+    const now = Date.now()
+    if (now - lastTouchEnd <= 300) {
+        e.preventDefault()
+    }
+    lastTouchEnd = now
+}, false)
 
 // Initialize clouds
 initClouds()

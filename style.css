@@ -12,6 +12,9 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
+    touch-action: none; /* Prevent scrolling on touch devices */
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 h1 {
@@ -30,4 +33,24 @@ p {
     border: 2px solid #333;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 600px) {
+    h1 {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+    
+    p {
+        font-size: 1rem;
+        margin-top: 10px;
+    }
+    
+    #gameCanvas {
+        width: 95vw;
+        max-width: 400px;
+    }
 }
