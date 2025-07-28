@@ -31,6 +31,8 @@ let debugMode = false // Toggle with 'D' key
 // FPS tracking
 let lastTime = 0
 let fps = 0
+let fpsUpdateTimer = 0
+let frameCounter = 0
 
 // Bird object
 const bird = {
@@ -670,12 +672,22 @@ function gameLoop(currentTime) {
     // Calculate FPS and frame timing
     if (currentTime) {
         const deltaTime = currentTime - lastTime
-        fps = Math.round(1000 / deltaTime)
         
         // Skip frame if running too fast
         if (deltaTime < FRAME_TIME * 0.8) {
             requestAnimationFrame(gameLoop)
             return
+        }
+        
+        // Update FPS calculation
+        frameCounter++
+        fpsUpdateTimer += deltaTime
+        
+        // Update FPS display every 500ms for stability
+        if (fpsUpdateTimer >= 500) {
+            fps = Math.round((frameCounter * 1000) / fpsUpdateTimer)
+            frameCounter = 0
+            fpsUpdateTimer = 0
         }
         
         lastTime = currentTime
@@ -691,12 +703,10 @@ function gameLoop(currentTime) {
     updateClouds()
     drawClouds()
     
-    // Draw FPS counter (update less frequently for performance)
-    if (frameCount % 10 === 0) {
-        ctx.fillStyle = '#000'
-        ctx.font = '16px Arial'
-        ctx.fillText(`FPS: ${fps}`, 10, 20)
-    }
+    // Draw FPS counter
+    ctx.fillStyle = '#000'
+    ctx.font = '16px Arial'
+    ctx.fillText(`FPS: ${fps}`, 10, 20)
     
     // Draw debug info
     if (debugMode) {
