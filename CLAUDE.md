@@ -147,8 +147,10 @@ Follow this workflow for every feature implementation:
 1. **Implement feature** - Write the code for the new feature
 2. **Test with Playwright** - Automatically test using Playwright browser automation
 3. **If test fails** - Debug and fix the implementation, then test again
-4. **If test passes** - Create a git commit with descriptive message
-5. **Move to next feature** - Only proceed after successful test and commit
+4. **If test passes** - Update CLAUDE.md context to reflect the changes
+5. **Commit changes** - Create a git commit with descriptive message
+6. **Move to next feature** - Only proceed after successful test and commit
+- Implement -> test -> update context -> commit
 
 ## Testing Guidelines
 - Use Playwright MCP for automated browser testing
